@@ -162,8 +162,8 @@
         }
       },
       "protectedSettings": {
-        "StorageUrl": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('diagsaName')), '2015-06-15').primaryEndpoints['blob']]",
-        "StorageAccessKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('diagsaName')), '2015-06-15').key1]",
+        "StorageUrl": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('diagsaName')), '2015-06-15').primaryEndpoints['blob']]",
+        "StorageAccessKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('diagsaName')), '2015-06-15').key1]",
         "Password": "[parameters('sqlAutobackupEncryptionPassword')]",
         "SQLAuthUpdateUserName": "[parameters('sqlAuthenticationLogin')]",
         "SQLAuthUpdatePassword": "[parameters('sqlAuthenticationPassword')]"
