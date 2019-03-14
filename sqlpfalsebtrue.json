@@ -1,0 +1,174 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "virtualMachineName": {
+        "type": "string",
+        "defaultValue": "sqlvm",
+        "metadata": {
+          "description": "SQL Server VM Name"
+        }
+      },
+      "sqlAutoPatchingDayOfWeek": {
+        "type": "string",
+        "defaultValue": "Sunday",
+        "allowedValues": [
+            "Monday", "Tuesday", "Wednesday", "Thursday","Friday", "Saturday", "Sunday"
+        ]
+    },
+    "sqlAutoPatchingStartHour": {
+        "type": "string",
+        "defaultValue": "2",
+        "allowedValues": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "17",
+          "18",
+          "19",
+          "20",
+          "21",
+          "22",
+          "23"
+          ]
+      },
+      "sqlAutoPatchingWindowDuration": {
+        "type": "string",
+        "defaultValue": "60",
+        "allowedValues": [
+          "30",
+          "60",
+          "90",
+          "120",
+          "150",
+          "180"
+          ]
+      },
+      "sqlConnectivityType": {
+        "type": "string",
+        "defaultValue": "public",
+        "allowedValues": [ "public", "private" ]
+      },
+      "sqlStorageWorkloadType": {
+        "type": "string",
+        "defaultValue": "GENERAL",
+        "metadata": {
+          "description": "SQL Server Virtual Machine Workload Type: GENERAL - general workload; DW - datawarehouse workload; OLTP - Transactional processing workload"
+        },
+        "allowedValues": [
+          "GENERAL",
+          "OLTP",
+          "DW"
+        ]
+    },
+       "diagsaName": {
+           "type": "string"
+       },
+       "sqlAutoBackupEncryptionPassword": {
+        "type": "securestring",
+        "metadata": {
+          "description": "Encryption password of SQL Autobackup"
+         }
+      },
+      "sqlAuthenticationLogin": {
+        "type": "string",
+        "defaultValue": "sqladmin",
+          "metadata": {
+              "description": "the administrator login"
+          }
+      },
+      "sqlAuthenticationPassword": {
+        "type": "securestring",
+        "metadata": {
+          "description": "Authentication password of SQL"
+         }
+      }
+  },
+  "variables": {
+    "resourceGroupLocation": "[resourceGroup().location]",
+    "sqlAutobackupRetentionPeriod": "30",
+    "backupSystemDbs": "true",
+    "backupScheduleType": "Automated",
+    "sqlPortNumber": "1433",
+    "sqlStorageDisksCount": "1",
+    "sqlStorageDisksConfigurationType": "NEW",
+    "sqlStorageStartingDeviceId": "2",
+    "rServicesEnabled": "true"
+},
+"resources": [
+{
+    "apiVersion": "2015-06-15",
+    "type": "Microsoft.Compute/virtualMachines/extensions",
+    "name": "[concat(parameters('virtualMachineName'), '/SqlIaasExtension')]",
+    "location": "[variables('resourceGroupLocation')]",
+    "properties": {
+      "type": "SqlIaaSAgent",
+      "publisher": "Microsoft.SqlServer.Management",
+      "typeHandlerVersion": "2.0",
+      "autoUpgradeMinorVersion": "true",
+      "settings": {
+        "AutoTelemetrySettings": {
+          "Region": "[variables('resourceGroupLocation')]"
+        },
+        "AutoPatchingSettings": {
+          "PatchCategory": "WindowsMandatoryUpdates",
+          "Enable": false,
+          "DayOfWeek": "[parameters('sqlAutopatchingDayOfWeek')]",
+          "MaintenanceWindowStartingHour": "[parameters('sqlAutopatchingStartHour')]",
+          "MaintenanceWindowDuration": "[parameters('sqlAutopatchingWindowDuration')]"
+        },
+        "AutoBackupSettings": {
+          "Enable": true,
+          "RetentionPeriod": "[variables('sqlAutobackupRetentionPeriod')]",
+          "EnableEncryption": true,
+          "BackupSystemDbs": "[variables('backupSystemDbs')]",
+          "BackupScheduleType": "[variables('backupScheduleType')]"
+        },
+        "KeyVaultCredentialSettings": {
+          "Enable": false,
+          "CredentialName": ""
+        },
+        "ServerConfigurationsManagementSettings": {
+          "SQLConnectivityUpdateSettings": {
+            "ConnectivityType": "[parameters('sqlConnectivityType')]",
+            "Port": "[variables('sqlPortNumber')]"
+          },
+          "SQLWorkloadTypeUpdateSettings": {
+            "SQLWorkloadType": "[parameters('sqlStorageWorkloadType')]"
+          },
+          "SQLStorageUpdateSettings": {
+            "DiskCount": "[variables('sqlStorageDisksCount')]",
+            "NumberOfColumns": "[variables('sqlStorageDisksCount')]",
+            "StartingDeviceID": "[variables('sqlStorageStartingDeviceId')]",
+            "DiskConfigurationType": "[variables('sqlStorageDisksConfigurationType')]"
+          },
+          "AdditionalFeaturesServerConfigurations": {
+            "IsRServicesEnabled": "[variables('rServicesEnabled')]"
+          }
+        }
+      },
+      "protectedSettings": {
+        "StorageUrl": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('diagsaName')), '2015-06-15').primaryEndpoints['blob']]",
+        "StorageAccessKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('diagsaName')), '2015-06-15').key1]",
+        "Password": "[parameters('sqlAutobackupEncryptionPassword')]",
+        "SQLAuthUpdateUserName": "[parameters('sqlAuthenticationLogin')]",
+        "SQLAuthUpdatePassword": "[parameters('sqlAuthenticationPassword')]"
+      }
+    }
+  }
+]
+}
