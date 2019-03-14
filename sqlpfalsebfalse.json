@@ -124,20 +124,6 @@
         "AutoTelemetrySettings": {
           "Region": "[variables('resourceGroupLocation')]"
         },
-        "AutoPatchingSettings": {
-          "PatchCategory": "WindowsMandatoryUpdates",
-          "Enable": false,
-          "DayOfWeek": "[parameters('sqlAutopatchingDayOfWeek')]",
-          "MaintenanceWindowStartingHour": "[parameters('sqlAutopatchingStartHour')]",
-          "MaintenanceWindowDuration": "[parameters('sqlAutopatchingWindowDuration')]"
-        },
-        "AutoBackupSettings": {
-          "Enable": false,
-          "RetentionPeriod": "[variables('sqlAutobackupRetentionPeriod')]",
-          "EnableEncryption": true,
-          "BackupSystemDbs": "[variables('backupSystemDbs')]",
-          "BackupScheduleType": "[variables('backupScheduleType')]"
-        },
         "KeyVaultCredentialSettings": {
           "Enable": false,
           "CredentialName": ""
