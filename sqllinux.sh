@@ -1,3 +1,5 @@
+echo "SQL_PASSWORD=$SQL_PASSWORD"
+
 fdisk -l /dev/sdc || break
         fdisk /dev/sdc << EOF
 n
@@ -26,3 +28,9 @@ source ~/.bashrc
 
 sudo firewall-cmd --zone=public --add-port=1433/tcp --permanent
 sudo firewall-cmd --reload
+
+sudo systemctl stop mssql-server
+sudo /opt/mssql/bin/mssql-conf set-sa-password << EOF
+$SQL_PASSWORD
+$SQL_PASSWORD
+EOF
