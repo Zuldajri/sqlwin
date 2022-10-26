@@ -110,8 +110,8 @@
     },
     "variables": {
       "resourceGroupLocation": "[resourceGroup().location]",
-      "logDisksLUNs": "[if(contains(parameters('AZmainVMDataDiskCount'), 2), variables('logDisksLUNs2'), variables('logDisksLUNs1'))]",
-      "logPath": "[if(contains(parameters('AZmainVMDataDiskCount'), 2), variables('logPath2'), variables('logPath1'))]",
+      "logDisksLUNs": "[if(contains(string(parameters('AZmainVMDataDiskCount')), '2'), variables('logDisksLUNs2'), variables('logDisksLUNs1'))]",
+      "logPath": "[if(contains(string(parameters('AZmainVMDataDiskCount')), '2'), variables('logPath2'), variables('logPath1'))]",
       "logDisksLUNs1": [
                 0
             ],
