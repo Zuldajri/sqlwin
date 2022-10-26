@@ -106,6 +106,90 @@
           "metadata": {
             "description": "Number of Data Disks"
           }
+        },
+        "sqlWeeklyFullBackupDayOfWeek": {
+          "type": "string",
+          "defaultValue": "Sunday",
+          "allowedValues": [
+              "Monday", "Tuesday", "Wednesday", "Thursday","Friday", "Saturday", "Sunday"
+          ]
+      },
+      "sqlWeeklyFullBackupStartHour": {
+          "type": "int",
+          "defaultValue": 2,
+          "allowedValues": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+            ]
+        },
+        "sqlfullBackupWindowHours": {
+          "type": "int",
+          "defaultValue": 2,
+          "allowedValues": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+            ]
+        },
+        "sqlLogBackupFrequency": {
+          "type": "int",
+          "defaultValue": "15",
+          "allowedValues": [
+            5,
+            10,
+            15,
+            20,
+            25,
+            30,
+            35,
+            40,
+            45,
+            50,
+            55,
+            60
+            ]
         }
     },
     "variables": {
@@ -123,10 +207,10 @@
   },
   "resources": [
     {
-            "name": "[parameters('virtualMachineName')]",
-            "type": "Microsoft.SqlVirtualMachine/SqlVirtualMachines",
-            "apiVersion": "2021-11-01-preview",
-            "location": "[variables('resourceGroupLocation')]",
+      "name": "[parameters('virtualMachineName')]",
+      "type": "Microsoft.SqlVirtualMachine/SqlVirtualMachines",
+      "apiVersion": "2021-11-01-preview",
+      "location": "[variables('resourceGroupLocation')]",
       "properties": {
         "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]",
         "sqlManagement": "Full",
@@ -138,15 +222,20 @@
           "MaintenanceWindowDuration": "[parameters('sqlAutopatchingWindowDuration')]"
         },
         "AutoBackupSettings": {
-          "Enable": false,
-          "RetentionPeriod": 30,
-          "EnableEncryption": true,
-          "BackupSystemDbs": true,
           "BackupScheduleType": "Automated",
+          "BackupSystemDbs": true,
+          "Enable": false,
+          "EnableEncryption": true,
           "Password": "[parameters('sqlAutobackupEncryptionPassword')]",
+          "RetentionPeriod": 30,
           "StorageAccountUrl": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('diagsaName')), '2019-06-01').primaryEndpoints['blob']]",
           "StorageAccessKey": "[first(listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('diagsaName')), '2019-06-01').keys).value]",
-          "StorageContainerName": "sqlbackup"
+          "StorageContainerName": "sqlbackup",
+          "fullBackupFrequency": "Weekly",
+          "fullBackupStartTime": "[parameters('sqlWeeklyFullBackupStartHour')]",
+          "fullBackupWindowHours": "[parameters('sqlfullBackupWindowHours')]",
+          "daysOfWeek": "[parameters('sqlWeeklyFullBackupDayOfWeek')]",
+          "logBackupFrequency": "[parameters('sqlLogBackupFrequency')]"
         },
         "StorageConfigurationSettings": {
           "DiskConfigurationType": "NEW",
