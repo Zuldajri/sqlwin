@@ -1,0 +1,197 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "virtualMachineName": {
+          "type": "string",
+          "defaultValue": "sqlvm",
+          "metadata": {
+            "description": "SQL Server VM Name"
+          }
+        },
+        "sqlAutoPatchingDayOfWeek": {
+          "type": "string",
+          "defaultValue": "Sunday",
+          "allowedValues": [
+              "Monday", "Tuesday", "Wednesday", "Thursday","Friday", "Saturday", "Sunday"
+          ]
+      },
+      "sqlAutoPatchingStartHour": {
+          "type": "string",
+          "defaultValue": "2",
+          "allowedValues": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23"
+            ]
+        },
+        "sqlAutoPatchingWindowDuration": {
+          "type": "string",
+          "defaultValue": "60",
+          "allowedValues": [
+            "30",
+            "60",
+            "90",
+            "120",
+            "150",
+            "180"
+            ]
+        },
+        "sqlConnectivityType": {
+          "type": "string",
+          "defaultValue": "private",
+          "allowedValues": [ "public", "private" ]
+        },
+        "sqlStorageWorkloadType": {
+          "type": "string",
+          "defaultValue": "GENERAL",
+          "metadata": {
+            "description": "SQL Server Virtual Machine Workload Type: GENERAL - general workload; DW - datawarehouse workload; OLTP - Transactional processing workload"
+          },
+          "allowedValues": [
+            "GENERAL",
+            "OLTP",
+            "DW"
+          ]
+      },
+         "diagsaName": {
+             "type": "string"
+         },
+         "sqlAutoBackupEncryptionPassword": {
+          "type": "securestring",
+          "metadata": {
+            "description": "Encryption password of SQL Autobackup"
+           }
+        },
+        "sqlAuthenticationLogin": {
+          "type": "string",
+          "defaultValue": "sqladmin",
+            "metadata": {
+                "description": "the administrator login"
+            }
+        },
+        "sqlAuthenticationPassword": {
+          "type": "securestring",
+          "metadata": {
+            "description": "Authentication password of SQL"
+           }
+        },
+        "AZmainVMDataDiskCount": {
+          "type": "int",
+          "allowedValues": [
+            1,
+            2
+          ],
+          "metadata": {
+            "description": "Number of Data Disks"
+          }
+        }
+    },
+    "variables": {
+      "resourceGroupLocation": "[resourceGroup().location]",
+      "logDisksLUNs": "[if(contains(parameters('AZmainVMDataDiskCount'), 2), variables('logDisksLUNs2'), variables('logDisksLUNs1'))]",
+      "logPath": "[if(contains(parameters('AZmainVMDataDiskCount'), 2), variables('logPath2'), variables('logPath1'))]",
+      "logDisksLUNs1": [
+                0
+            ],
+      "logPath1": "F:\\log",
+      "logDisksLUNs2": [
+                1
+            ],
+      "logPath2": "G:\\log"
+  },
+  "resources": [
+    {
+            "name": "[parameters('virtualMachineName')]",
+            "type": "Microsoft.SqlVirtualMachine/SqlVirtualMachines",
+            "apiVersion": "2021-11-01-preview",
+            "location": "[variables('resourceGroupLocation')]",
+      "properties": {
+        "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]",
+        "sqlManagement": "Full",
+        "SqlServerLicenseType": "PAYG",
+        "AutoPatchingSettings": {
+          "Enable": false,
+          "DayOfWeek": "[parameters('sqlAutopatchingDayOfWeek')]",
+          "MaintenanceWindowStartingHour": "[parameters('sqlAutopatchingStartHour')]",
+          "MaintenanceWindowDuration": "[parameters('sqlAutopatchingWindowDuration')]"
+        },
+        "AutoBackupSettings": {
+          "Enable": false,
+          "RetentionPeriod": 30,
+          "EnableEncryption": true,
+          "BackupSystemDbs": true,
+          "BackupScheduleType": "Automated",
+          "Password": "[parameters('sqlAutobackupEncryptionPassword')]",
+          "StorageAccountUrl": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('diagsaName')), '2019-06-01').primaryEndpoints['blob']]",
+          "StorageAccessKey": "[first(listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('diagsaName')), '2019-06-01').keys).value]",
+          "StorageContainerName": "sqlbackup"
+        },
+        "StorageConfigurationSettings": {
+          "DiskConfigurationType": "NEW",
+          "StorageWorkloadType": "[parameters('sqlStorageWorkloadType')]",
+          "SQLDataSettings": {
+            "LUNs": [
+              0
+            ],
+            "DefaultFilePath": "F:\\data"
+          },
+          "SQLLogSettings": {
+            "LUNs": "[variables('logDisksLUNs')]",
+            "DefaultFilePath": "[variables('logPath')]"
+          },
+          "SQLTempDbSettings": {
+            "DefaultFilePath": "D:\\tempDb",
+            "DataFileCount": 8,
+            "DataFileSize": 8,
+            "DataGrowth": 64,
+            "LogFileSize": 8,
+            "LogGrowth": 64
+          },
+          "SQLSystemDbOnDataDisk": false
+        },
+        "ServerConfigurationsManagementSettings": {
+          "SQLConnectivityUpdateSettings": {
+            "ConnectivityType": "[parameters('sqlConnectivityType')]",
+            "Port": 1433,
+            "SQLAuthUpdateUserName": "[parameters('sqlAuthenticationLogin')]",
+            "SQLAuthUpdatePassword": "[parameters('sqlAuthenticationPassword')]"
+          },
+          "AdditionalFeaturesServerConfigurations": {
+            "IsRServicesEnabled": true
+          },
+          "SQLInstanceSettings": {
+            "maxDop": 0,
+            "isOptimizeForAdHocWorkloadsEnabled": false,
+            "collation": "SQL_Latin1_General_CP1_CI_AS",
+            "minServerMemoryMB": 0,
+            "maxServerMemoryMB": 2147483647,
+            "isLPIMEnabled": false,
+            "isIFIEnabled": false
+          }
+        }
+      }
+    }
+  ]
+  }
