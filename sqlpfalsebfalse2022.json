@@ -215,28 +215,6 @@
         "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]",
         "sqlManagement": "Full",
         "SqlServerLicenseType": "PAYG",
-        "AutoPatchingSettings": {
-          "Enable": false,
-          "DayOfWeek": "[parameters('sqlAutopatchingDayOfWeek')]",
-          "MaintenanceWindowStartingHour": "[parameters('sqlAutopatchingStartHour')]",
-          "MaintenanceWindowDuration": "[parameters('sqlAutopatchingWindowDuration')]"
-        },
-        "AutoBackupSettings": {
-          "BackupScheduleType": "Automated",
-          "BackupSystemDbs": true,
-          "Enable": false,
-          "EnableEncryption": true,
-          "Password": "[parameters('sqlAutobackupEncryptionPassword')]",
-          "RetentionPeriod": 30,
-          "StorageAccountUrl": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('diagsaName')), '2015-06-15').primaryEndpoints['blob']]",
-          "StorageAccessKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('diagsaName')), '2015-06-15').key1]",
-          "StorageContainerName": "sqlbackup",
-          "fullBackupFrequency": "Weekly",
-          "fullBackupStartTime": "[parameters('sqlWeeklyFullBackupStartHour')]",
-          "fullBackupWindowHours": "[parameters('sqlfullBackupWindowHours')]",
-          "daysOfWeek": "[parameters('sqlWeeklyFullBackupDayOfWeek')]",
-          "logBackupFrequency": "[parameters('sqlLogBackupFrequency')]"
-        },
         "StorageConfigurationSettings": {
           "DiskConfigurationType": "NEW",
           "StorageWorkloadType": "[parameters('sqlStorageWorkloadType')]",
