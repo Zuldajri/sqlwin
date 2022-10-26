@@ -235,7 +235,9 @@
           "fullBackupFrequency": "Weekly",
           "fullBackupStartTime": "[parameters('sqlWeeklyFullBackupStartHour')]",
           "fullBackupWindowHours": "[parameters('sqlfullBackupWindowHours')]",
-          "daysOfWeek": "[parameters('sqlWeeklyFullBackupDayOfWeek')]",
+          "daysOfWeek": [
+            "[parameters('sqlWeeklyFullBackupDayOfWeek')]"
+          ],
           "logBackupFrequency": "[parameters('sqlLogBackupFrequency')]"
         },
         "StorageConfigurationSettings": {
