@@ -222,7 +222,7 @@
           "MaintenanceWindowDuration": "[parameters('sqlAutopatchingWindowDuration')]"
         },
         "AutoBackupSettings": {
-          "BackupScheduleType": "Automated",
+          "BackupScheduleType": "Manual",
           "BackupSystemDbs": true,
           "Enable": true,
           "EnableEncryption": true,
