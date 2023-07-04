@@ -230,6 +230,9 @@
           },
           "SQLTempDbSettings": {
             "DefaultFilePath": "F:\\tempDb",
+              "LUNs": [
+              0
+            ],
             "DataFileCount": 8,
             "DataFileSize": 8,
             "DataGrowth": 64,
