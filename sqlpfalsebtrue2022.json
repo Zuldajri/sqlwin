@@ -245,7 +245,7 @@
             "DefaultFilePath": "[variables('logPath')]"
           },
           "SQLTempDbSettings": {
-            "DefaultFilePath": "D:\\tempDb",
+            "DefaultFilePath": "F:\\tempDb",
             "DataFileCount": 8,
             "DataFileSize": 8,
             "DataGrowth": 64,
